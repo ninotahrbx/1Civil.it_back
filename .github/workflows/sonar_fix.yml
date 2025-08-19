@@ -30,6 +30,19 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
+      - name: Run tests
+        run: mvn -B -ntp -f "$POM" -Dspring.profiles.active=test test
+
+      - name: Upload surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: |
+            **/target/surefire-reports/*.txt
+            **/target/surefire-reports/*.xml
+            **/target/surefire-reports/*.dumpstream
+
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
