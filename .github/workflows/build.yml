@@ -9,6 +9,9 @@ jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
+     defaults:
+      run:
+        working-directory: 1CiviL.it-backend 
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -43,6 +46,6 @@ jobs:
         run: |
           mvn -B -ntp clean verify jacoco:report
           mvn -B -ntp org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=ninotahrbx_1Civil.it-backend
+            -Dsonar.projectKey=ninotahrbx_1Civil.it_back
             # + ajoute si SonarCloud :
             # -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=<ton_org>
