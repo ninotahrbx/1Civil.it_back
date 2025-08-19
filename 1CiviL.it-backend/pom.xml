@@ -30,6 +30,7 @@
 		<java.version>17</java.version>
 		<org.mapstruct.version>1.6.3</org.mapstruct.version>
 		<jwt.version>0.11.5</jwt.version>
+		<sonar.organization>ninotahrbx</sonar.organization>
 	</properties>
 	<dependencies>
 		<dependency>
