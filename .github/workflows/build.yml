@@ -1,51 +1,70 @@
-name: SonarQube
+name: SonarQube (NEW v3)
+
 on:
   push:
     branches: [ main ]
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch: {}   # permet de lancer manuellement sur ta branche
 
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
-     defaults:
-      run:
-        working-directory: 1CiviL.it-backend 
+
     steps:
+      - name: Marker
+        run: echo "✅ Using NEW workflow v3 - $(date)"
+
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-
-      - uses: actions/setup-java@v4
         with:
-          java-version: 17
-          distribution: zulu
-          cache: maven
+          fetch-depth: 0  # recommandé
 
-      - uses: actions/cache@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: 'maven'
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - uses: actions/cache@v4
+      - name: Cache Maven packages
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Debug layout
+      # Détecte le pom.xml exact (respecte la casse), et exporte POM et DIR
+      - name: Locate pom.xml
+        id: locate
         run: |
-          pwd
-          ls -la
-          find . -maxdepth 3 -name pom.xml -print
+          set -e
+          echo "Workspace: $(pwd)"
+          echo "POMs trouvés :"
+          find . -maxdepth 6 -name pom.xml -print
+          POM=$(find . -maxdepth 6 -path "*/1*Civi*l*.it-backend/pom.xml" -print -quit || true)
+          if [ -z "$POM" ]; then POM=$(find . -maxdepth 6 -name pom.xml -print -quit); fi
+          if [ -z "$POM" ]; then echo "Aucun pom.xml trouvé" >&2; exit 1; fi
+          echo "POM=$POM" >> $GITHUB_ENV
+          echo "DIR=$(dirname "$POM")" >> $GITHUB_ENV
+          echo "📄 POM sélectionné: $POM"
 
-      - name: Build and analyze
+      - name: Build (tests + JaCoCo)
+        run: mvn -B -ntp -f "$POM" clean verify jacoco:report
+
+      - name: Sonar analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -B -ntp clean verify jacoco:report
-          mvn -B -ntp org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=ninotahrbx_1Civil.it_back
-            # + ajoute si SonarCloud :
+          mvn -B -ntp -f "$POM" org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=ninotahrbx_1Civil.it_back \
+            -Dsonar.coverage.jacoco.xmlReportPaths="$DIR/target/site/jacoco/jacoco.xml"
+            # SonarCloud ? décommente :
             # -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=<ton_org>
