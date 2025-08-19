@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
      defaults:
       run:
-        working-directory: 1Civil.it_back/1CiviL.it-backend
+        working-directory: 1CiviL.it-backend
     steps:
       - uses: actions/checkout@v4
         with:
