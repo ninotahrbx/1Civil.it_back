@@ -12,8 +12,8 @@ pipeline {
 
   environment {
     APP_SLUG = '1civil-it'
-    REGISTRY = 'registry.example.com'                // ← à adapter
-    REGISTRY_CREDENTIALS = 'docker-registry'        // ← ID Jenkins
+    REGISTRY = 'registry.example.com'                
+    REGISTRY_CREDENTIALS = 'docker-registry'        
     HELM_RELEASE = 'onecivilit'
     DOCKER_REPO_API = "${REGISTRY}/${APP_SLUG}-api"
     DOCKER_REPO_WEB = "${REGISTRY}/${APP_SLUG}-web"
@@ -82,7 +82,7 @@ pipeline {
             if (env.SONAR_ID) {
               sonarExtra = "-Dsonar.pullrequest.key=${env.SONAR_ID} -Dsonar.pullrequest.branch=${env.SONAR_BRANCH} -Dsonar.pullrequest.base=${env.SONAR_TARGET}"
             } else {
-              // ↓ nécessite SonarQube Developer/Enterprise Edition.
+             
               sonarExtra = "-Dsonar.branch.name=${env.BRANCH_NAME}"
             }
             sh """
